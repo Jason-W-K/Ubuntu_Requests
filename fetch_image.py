@@ -3,20 +3,34 @@ import requests
 from urllib.parse import urlparse
 from uuid import uuid4
 
-def get_image_filename(url):
-    parsed_url = urlparse(url)
-    filename = os.path.basename(parsed_url.path)
+# 🌐 Prompt the user for an image URL
+image_url = input("Enter the image URL: ").strip()
+
+# 📁 Create the 'Fetched_Images' directory if it doesn't exist
+os.makedirs("Fetched_Images", exist_ok=True)
+
+def get_filename_from_url(url):
+    """
+    Extracts the filename from the URL.
+    If not available, generates a unique filename.
+    """
+    parsed = urlparse(url)
+    filename = os.path.basename(parsed.path)
     return filename if filename else f"image_{uuid4().hex}.jpg"
 
-def fetch_and_save_image(url):
+def download_image(url):
+    """
+    Downloads the image from the given URL and saves it to the Fetched_Images folder.
+    Handles errors gracefully.
+    """
     try:
         response = requests.get(url, timeout=10)
-        response.raise_for_status()  # Raise HTTPError for bad responses
+        response.raise_for_status()  # Raise exception for HTTP errors
 
-        os.makedirs("Fetched_Images", exist_ok=True)
-        filename = get_image_filename(url)
+        filename = get_filename_from_url(url)
         filepath = os.path.join("Fetched_Images", filename)
 
+        # 💾 Save the image in binary mode
         with open(filepath, "wb") as f:
             f.write(response.content)
 
@@ -29,6 +43,5 @@ def fetch_and_save_image(url):
     except Exception as err:
         print(f"❌ Unexpected error: {err}")
 
-if __name__ == "__main__":
-    image_url = input("🌐 Enter the image URL: ").strip()
-    fetch_and_save_image(image_url)
+# 🚀 Execute the download
+download_image(image_url)
